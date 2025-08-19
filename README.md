@@ -41,11 +41,16 @@ This is a study case on how to provision, configure and utilize an on-premise ku
 
 It’s designed with agnostic automation tools in mind so it is easy to migrate the cluster to a hybrid mode or full cloud.
 
-<p align="right"><a href="#readme-top">⬆ back to top</a></p>
-
 ### Built With
 
 - [![git][git-shield]][git-url]
+- [![docker][docker-shield]][docker-url]
+- [![kubectl][kubectl-shield]][kubectl-url]
+- [![kind][kind-shield]][kind-url]
+- [![helm][helm-shield]][helm-url]
+- [![terraform][terraform-shield]][terraform-url]
+- [![node][node-shield]][node-url]
+- [![pnpm][pnpm-shield]][pnpm-url]
 
 <p align="right"><a href="#readme-top">⬆ back to top</a></p>
 
@@ -73,13 +78,15 @@ Follow these instructions to set the project locally.
 
 ### Phase 1: Environment & Tooling
 - [ ] Install prerequisites:
-    - [ ] docker (container runtime, required by kind)
-    - [ ] kind (running local k8s clusters using docker container as nodes)
-    - [ ] kubectl (k8s CLI)
-    - [ ] helm (k8s "package manager")
-    - [ ] terraform (infra as code)
-    - [ ] jenkins (CI/CD solution, dockerized)
-    - [ ] nodejs & pnpm (monorepo workspace)
+    - [x] git (versioning tool)
+    - [x] docker (container runtime, required by kind)
+    - [x] kubectl (k8s CLI)
+    - [x] kind (local k8s clusters)
+    - [x] helm (k8s "package manager")
+    - [x] terraform (infra as code)
+    - [ ] jenkins (CI/CD solution, via helm)
+    - [x] nodejs (javascript runtime)
+    - [x] pnpm (node package manager)
 
 ### Phase 2: Infrastructure & Setup
 - [ ] Set up code quality tools
@@ -145,5 +152,19 @@ Distributed under the GNU General Public License v3.0. See [LICENSE][license-url
 
 <!-- BUILD WITH SHIELDS -->
 
-[git-shield]: https://img.shields.io/badge/git-versioning%20tool-000000?style=for-the-badge&logo=git&logoColor=ffffff&labelColor=F05032
+[git-shield]: https://img.shields.io/badge/git-2.39.5%20versioning%20tool-000000?style=for-the-badge&logo=git&logoColor=ffffff&labelColor=F05032
 [git-url]: https://git-scm.com/
+[docker-shield]: https://img.shields.io/badge/docker-28.3.3%20containerization%20platform-000000?style=for-the-badge&logo=docker&logoColor=ffffff&labelColor=2496ED
+[docker-url]: https://www.docker.com/
+[kubectl-shield]: https://img.shields.io/badge/kubectl-1.33.3%20kubernetes%20CLI-000000?style=for-the-badge&logo=kubernetes&logoColor=ffffff&labelColor=326CE5
+[kubectl-url]: https://kubernetes.io/
+[kind-shield]: https://img.shields.io/badge/kind-0.29.0%20local%20kubernetes%20(container%20orchestration)-000000?style=for-the-badge&logo=kubernetes&logoColor=ffffff&labelColor=326CE5
+[kind-url]: https://kind.sigs.k8s.io/
+[helm-shield]: https://img.shields.io/badge/helm-3.18.5%20kubernetes%20package%20manager-000000?style=for-the-badge&logo=kubernetes&logoColor=ffffff&labelColor=0F1689
+[helm-url]: https://www.helm.sh/
+[terraform-shield]: https://img.shields.io/badge/terraform-1.12.2%20infrastructure%20as%20code-000000?style=for-the-badge&logo=terraform&logoColor=ffffff&labelColor=844FBA
+[terraform-url]: https://developer.hashicorp.com/terraform
+[node-shield]: https://img.shields.io/badge/node-22.17.0%20javascript%20runtime%20environment-000000?style=for-the-badge&logo=nodedotjs&logoColor=ffffff&labelColor=5FA04E
+[node-url]: https://pnpm.io/installation/
+[pnpm-shield]: https://img.shields.io/badge/pnpm-10.13.1%20node%20package%20manager-000000?style=for-the-badge&logo=pnpm&logoColor=ffffff&labelColor=f69220
+[pnpm-url]: https://pnpm.io/installation/
