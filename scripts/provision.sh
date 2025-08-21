@@ -2,6 +2,11 @@
 
 set -euo pipefail
 
+SCRIPTS_DIRECTORY="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+INITIAL_DEPLOY_FILE="$SCRIPTS_DIRECTORY/../k8s/deploy.yaml"
+NGINX_FILE="$SCRIPTS_DIRECTORY/../k8s/nginx.yaml"
+
 INFRASTRUCTURE_PREFIX='on-premises-k8s'
 KIND_CLUSTER_NAME="${INFRASTRUCTURE_PREFIX}-cluster"
 KIND_NODE_IMAGE='kindest/node:v1.33.2'
@@ -72,6 +77,13 @@ nodes:
     nodeRegistration:
       kubeletExtraArgs:
         node-labels: "ingress-ready=true"
+- role: worker
+- role: worker
+  labels:
+    role: app
+- role: worker
+  labels:
+    role: ingress
   extraPortMappings:
   - containerPort: 80
     hostPort: 80
@@ -125,8 +137,9 @@ apply_nginx_ingress() {
     return 0
   fi
   log "Installing NGINX ingress..."
-  kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/kind/deploy.yaml
+  kubectl apply -f "${NGINX_FILE}"
   kubectl wait -n ingress-nginx deployment ingress-nginx-controller --for=condition=available --timeout=120s
+  kubectl rollout status -n ingress-nginx deployment/ingress-nginx-controller --timeout=600s
 }
 
 create_infrastructure() {
@@ -160,10 +173,17 @@ destroy_infrastructure() {
   echo
 }
 
+deploy_first_time() {
+  log "Making initial deploy..."
+  docker push localhost:5000/hello-app:1.0
+  kubectl apply -f "${INITIAL_DEPLOY_FILE}"
+}
+
 choose_option() {
   options=(
     "Create infrastructure"
     "Destroy infrastructure"
+    "Initial deploy"
     "Exit"
   )
   echo
@@ -175,7 +195,8 @@ choose_option() {
     case "$choice" in
       1) echo; create_infrastructure; break ;;
       2) echo; destroy_infrastructure; break ;;
-      3) echo; break ;;
+      3) echo; deploy_first_time; break ;;
+      4) echo; break ;;
       *) tput cuu1; tput el ;;
     esac
   done
@@ -187,5 +208,6 @@ main() {
   choose_option
 }
 
-main
+trap 'log ERROR "Script failed at line $LINENO"' ERR
 
+main

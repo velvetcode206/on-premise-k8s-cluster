@@ -4,6 +4,7 @@ metadata:
   name: hello-app
   labels:
     app: hello-app
+  namespace: default
 spec:
   replicas: 2
   selector:
@@ -14,6 +15,8 @@ spec:
       labels:
         app: hello-app
     spec:
+      nodeSelector:
+        role: app
       containers:
         - name: hello-app
           image: localhost:5000/hello-app:1.0
@@ -26,18 +29,6 @@ spec:
             limits:
               cpu: 250m
               memory: 256Mi
-          livenessProbe:
-            httpGet:
-              path: /live
-              port: 8080
-            initialDelaySeconds: 5
-            periodSeconds: 10
-          readinessProbe:
-            httpGet:
-              path: /ready
-              port: 8080
-            initialDelaySeconds: 2
-            periodSeconds: 5
 ---
 kind: Service
 apiVersion: v1  
@@ -61,7 +52,7 @@ spec:
   rules:
   - http:
       paths:
-      - path: /
+      - path: /hello-app
         pathType: Prefix
         backend:
           service:
