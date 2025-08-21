@@ -166,5 +166,5 @@ Distributed under the GNU General Public License v3.0. See [LICENSE][license-url
 [terraform-url]: https://developer.hashicorp.com/terraform
 [node-shield]: https://img.shields.io/badge/node-22.17.0%20javascript%20runtime%20environment-000000?style=for-the-badge&logo=nodedotjs&logoColor=ffffff&labelColor=5FA04E
 [node-url]: https://pnpm.io/installation/
-[pnpm-shield]: https://img.shields.io/badge/pnpm-10.13.1%20node%20package%20manager-000000?style=for-the-badge&logo=pnpm&logoColor=ffffff&labelColor=f69220
+[pnpm-shield]: https://img.shields.io/badge/pnpm-10.15.0%20node%20package%20manager-000000?style=for-the-badge&logo=pnpm&logoColor=ffffff&labelColor=f69220
 [pnpm-url]: https://pnpm.io/installation/
