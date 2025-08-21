@@ -1,0 +1,46 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-app
+  namespace: des
+  labels:
+    app: hello-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: hello-app
+  template:
+    metadata:
+      labels:
+        app: hello-app
+    spec:
+      nodeSelector:
+        role: app
+      containers:
+        - name: hello-app
+          image: localhost:5000/hello-app:1.0
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+---
+kind: Service
+apiVersion: v1  
+metadata:
+  name: hello-app
+  namespace: des
+spec:
+  type: ClusterIP
+  selector:
+    app: hello-app
+  ports:
+  - port: 8080
+    targetPort: 8080
+---
