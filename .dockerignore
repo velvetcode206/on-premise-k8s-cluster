@@ -1,0 +1,12 @@
+node_modules
+.git
+.dockerignore
+.env
+.gitignore
+LICENSE
+README.md
+
+!**/target/*-runner
+!**/target/*-runner.jar
+!**/target/lib/*
+!**/target/quarkus-app/
