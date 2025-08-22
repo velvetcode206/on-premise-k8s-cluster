@@ -144,6 +144,10 @@ vite.config.ts.timestamp-*
 .cursor/rules/nx-rules.mdc
 .github/instructions/nx.instructions.md
 
+# Gradle
+.gradle/
+build/
+
 # Eclipse
 .project
 .classpath
@@ -161,6 +165,7 @@ nb-configuration.xml
 
 # Visual Studio Code
 .vscode
+.factorypath
 
 # OSX
 .DS_Store
@@ -173,9 +178,10 @@ nb-configuration.xml
 *.orig
 *.rej
 
-# Maven
-target/
-pom.xml.tag
-pom.xml.releaseBackup
-pom.xml.versionsBackup
-release.properties
+# Local environment
+.env
+
+# Plugin directory
+/.quarkus/cli/plugins/
+# TLS Certificates
+.certs/

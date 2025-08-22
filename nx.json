@@ -24,5 +24,15 @@
       "default",
       "!{projectRoot}/src/test/**/*"
     ]
-  }
+  },
+  "plugins": [
+    {
+      "plugin": "@nx/gradle",
+      "options": {
+        "testTargetName": "test",
+        "classesTargetName": "classes",
+        "buildTargetName": "build"
+      }
+    }
+  ]
 }
