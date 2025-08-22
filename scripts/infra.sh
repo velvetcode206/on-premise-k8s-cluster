@@ -113,7 +113,7 @@ deploy_environments() {
       done
     fi
   done
-  dockjer builx rm "${INFRASTRUCTURE_PREFIX}-builder"
+  docker buildx rm "${INFRASTRUCTURE_PREFIX}-builder"
   kubectl apply -f "${KIND_DES_PATH}"
   kubectl apply -f "${KIND_PRD_PATH}"
 }

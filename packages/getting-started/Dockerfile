@@ -14,9 +14,11 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 
 WORKDIR /app/packages/getting-started
 RUN chmod +x ./gradlew
+RUN ./gradlew dependencies --no-daemon
+RUN ./gradlew build --no-daemon
 
 WORKDIR /app
-RUN pnpm exec nx run getting-started:build -- --no-daemon --no-build-cache
+RUN pnpm exec nx run getting-started:build
 
 FROM eclipse-temurin:21-jre-alpine AS runner
 
