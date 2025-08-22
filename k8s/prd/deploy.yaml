@@ -2,25 +2,25 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: hello-app
+  name: getting-started
   namespace: prd
   labels:
-    app: hello-app
+    app: getting-started
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: hello-app
+      app: getting-started
   template:
     metadata:
       labels:
-        app: hello-app
+        app: getting-started
     spec:
       nodeSelector:
         role: app
       containers:
-        - name: hello-app
-          image: localhost:5000/hello-app:1.0
+        - name: getting-started
+          image: localhost:5000/getting-started-prd:latest
           ports:
             - containerPort: 8080
           resources:
@@ -34,12 +34,12 @@ spec:
 kind: Service
 apiVersion: v1  
 metadata:
-  name: hello-app
+  name: getting-started
   namespace: prd
 spec:
   type: ClusterIP
   selector:
-    app: hello-app
+    app: getting-started
   ports:
   - port: 8080
     targetPort: 8080

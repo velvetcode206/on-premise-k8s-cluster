@@ -51,7 +51,7 @@ create_kind_cluster() {
   fi
   log "Creating kind cluster ${KIND_CLUSTER_NAME}..."
   kind create cluster --name "$KIND_CLUSTER_NAME" --image "$KIND_NODE_IMAGE" --config "$KIND_CONFIG_PATH"
-  log "Installed required manifests..."
+  log "Installing required manifests..."
   kubectl apply -f "${KIND_REQUIRED_PATH}"
   kubectl rollout status -n ingress-nginx deployment/ingress-nginx-controller --timeout=600s
 }
@@ -97,7 +97,23 @@ destroy_infrastructure() {
 
 deploy_environments() {
   log "Deploying environments..."
-  docker push localhost:5000/hello-app:1.0
+  docker buildx create --name "${INFRASTRUCTURE_PREFIX}-builder" --use --driver docker-container --driver-opt network=host 2>/dev/null || log "Using existing buildx instance..."
+  for package_dir in "${SCRIPTS_DIR}/../packages"/*; do
+    [[ -d "$package_dir" ]] || continue
+    dockerfile_path="${package_dir}/Dockerfile"
+    if [[ -f "$dockerfile_path" ]]; then
+      package_name=$(basename "$package_dir")
+      for env in des prd; do
+        log " -> Building and pushing for $env"
+        docker buildx build \
+          -f "$dockerfile_path" \
+          -t "localhost:${REGISTRY_HOST_PORT}/${package_name}-${env}:latest" \
+          --push \
+          "${SCRIPTS_DIR}/.."
+      done
+    fi
+  done
+  dockjer builx rm "${INFRASTRUCTURE_PREFIX}-builder"
   kubectl apply -f "${KIND_DES_PATH}"
   kubectl apply -f "${KIND_PRD_PATH}"
 }

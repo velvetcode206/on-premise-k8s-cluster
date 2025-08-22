@@ -10,11 +10,11 @@ spec:
   rules:
   - http:
       paths:
-      - path: /des/hello-app
+      - path: /des/getting-started
         pathType: Prefix
         backend:
           service:
-            name: hello-app
+            name: getting-started
             port:
               number: 8080
 ---
