@@ -5,13 +5,13 @@ metadata:
   name: nginx-ingress
   namespace: des
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
   rules:
   - http:
       paths:
-      - path: /des/getting-started
-        pathType: Prefix
+      - path: /des/getting-started(/|$)(.*)
+        pathType: ImplementationSpecific
         backend:
           service:
             name: getting-started
