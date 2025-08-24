@@ -1,6 +1,6 @@
 .PHONY: create destroy deploy all help
 
-SCRIPT=./scripts/infra.sh
+SCRIPT=./scripts/infra-terraform.sh
 
 create:
 	@$(SCRIPT) create
