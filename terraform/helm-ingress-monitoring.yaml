@@ -1,0 +1,43 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: <k8s_ingress_name_monitoring>
+  namespace: <helm_kube_prometheus_stack_namespace>
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: "/$2"
+spec:
+  rules:
+    - http:
+        paths:
+          - path: "/<helm_kube_prometheus_stack_namespace>/grafana(/|$)(.*)"
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: "<kube_prometheus_stack_release_name>-grafana"
+                port:
+                  number: 80
+          - path: "/<helm_kube_prometheus_stack_namespace>/alertmanager(/|$)(.*)"
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: "<kube_prometheus_stack_release_name>-alertmanager"
+                port:
+                  number: 9093
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: prometheus-ingress
+  namespace: <helm_kube_prometheus_stack_namespace>
+spec:
+  rules:
+    - http:
+        paths:
+          - path: "/<helm_kube_prometheus_stack_namespace>/prometheus"
+            pathType: Prefix
+            backend:
+              service:
+                name: "<kube_prometheus_stack_release_name>-prometheus"
+                port:
+                  number: 9090

@@ -64,7 +64,7 @@ variable "kind_cluster_network_name" {
   default     = "kind"
 }
 
-# Helm
+# Helm nginx
 
 variable "helm_ingress_nginx_name_suffix" {
   type        = string
@@ -78,15 +78,9 @@ variable "helm_ingress_nginx_repo" {
   default     = "https://kubernetes.github.io/ingress-nginx"
 }
 
-variable "helm_ingress_nginx_chart" {
-  type        = string
-  description = "Chart to be used from the ingress-nginx repository (needs to match the name in the repo)."
-  default     = "ingress-nginx"
-}
-
 variable "helm_ingress_nginx_version" {
   type        = string
-  description = "The version for the nginx ingress controller."
+  description = "The version for the ingress-nginx controller."
   default     = "4.7.1"
 }
 
@@ -96,14 +90,53 @@ variable "helm_ingress_nginx_namespace" {
   default     = "ingress-nginx"
 }
 
-variable "helm_ingress_nginx_kind_patch_file" {
+variable "helm_ingress_nginx_values_file" {
   type        = string
   description = "A file with values to patch the ingress nginx usage with Kind."
-  default     = "ingress-nginx-kind-patch.yaml"
+  default     = "helm-ingress-nginx-values.yaml"
+}
+
+# Helm Prometheus
+
+variable "helm_kube_prometheus_stack_name_suffix" {
+  type        = string
+  description = "The suffix of the kube-prometheus-stack helm release name."
+  default     = "prometheus"
+}
+
+variable "helm_kube_prometheus_stack_repo" {
+  type        = string
+  description = "Url to fecth the kube-prometheus-stack repository."
+  default     = "https://prometheus-community.github.io/helm-charts"
+}
+
+variable "helm_kube_prometheus_stack_version" {
+  type        = string
+  description = "The version for the kube-prometheus-stack chart."
+  default     = "77.0.0"
+}
+
+variable "helm_kube_prometheus_stack_namespace" {
+  type        = string
+  description = "The kube-prometheus-stack namespace (it will be created if needed)."
+  default     = "monitoring"
+}
+
+variable "helm_kube_prometheus_stack_values_file" {
+  type        = string
+  description = "A file with values to patch the ingress nginx usage with Kind."
+  default     = "helm-prometheus-stack-values.yaml"
 }
 
 # Kubernetes
 
 variable "k8s_namespaces" {
   default = ["des", "prd"]
+  description = "The array of custom namespaces that will be created."
+}
+
+variable "k8s_ingress_name_monitoring" {
+  type        = string
+  description = "Name of the ingress that defines Grafana and Alertmanager."
+  default     = "ingress-monitoring"
 }

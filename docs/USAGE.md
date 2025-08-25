@@ -56,22 +56,37 @@ O cluster será utilizado em ambiente local GNU/Linux, com foco em desenvolvimen
 Estas tecnologias foram selecionados pela modularidade e por serem "fracamente acopladas", ou seja, podem ser substituidas sem gerar muitos problemas.
 
 - *Sistema operacional* **Debian GNU/Linux**: É reconhecido por sua estabilidade e segurança, ideal para servidores e sistemas críticos.
+
 - *Container runtime* **Docker**: A escolha princiapl para trabalhos que envolvem containers, uma das maioridas ferramentas do mercado.
+
 - *Kubernetes CLI*: **kubectl**: Essencial para interações diretas com o cluster kubernetes, local ou não.
+
 - ⚠️ *Kubernetes distribution* **kind**: A escolha mais importante do projeto, kind (kubenernetes in docker):
   - Utiliza containers para rodar os nodes ao invés de VMs dedicadas.
   - Permite múltiplos clusters em paralelo sem depender de VMs.
   - Muito usado em pipelines de CI/CD e testes locais.
+
 - *Kubernetes package manager* **Helm**: Facilita a instalação e manutenção de packages no cluster, como ingress, monitoramento e bancos de dados.
+
+- *Monitoramento* **Grafana**: Disponibiliza um dashboard robusto para visualizar as metricas de desejadas do cluster.
+
+- *Observabilidade* **Prometheus**: Coleta as métricas dos elementos do cluster, disponibilizando os logs para outras ferramentas.
+
+- *Alertas* **Alertmanager**: Permite a criação de alertas e notificações customizadas para elementos do cluster.
+
 - *Infrastructure as code* **Terraform**: De modo declarativo, provisiona toda a infraestrutura necessária, desde o registro de container local, o cluster kubernetes, volumes, etc.
+
 - *Node Version Manager* **nvm**: Facilita a instalação e gerenciamentos de mútiplas versões do NodeJS.
+
 - *Javascript Runtime* **NodeJS**: Necessário para executar arquivos JavaScript.
+
 - *Node Package Manager*: **pnpm**: Utilizado para gerenciar pacotes node, utilizado n lugar do `npm` pois:
   - Tem instalações mais rápidas que o `npm`;
   - Cache global evita duplicação de pacotes;
   - Dependências compartilhadas via links simbólicos, sem múltiplas cópias;
   - Controle mais rígido de versões, reduzindo conflitos;
   - Suporte a monorepos nativo com os `workspaces`, ideal para grandes projetos com múltiplos pacotes.
+
 - *Build tool* **Nx**: Responsável por organizar o monorepo e executar comandos, ideal para monorepos pois dispoẽm de:
   - Cache inteligente que acelera builds e testes
   - Análises gráficas de dependências entre projetos
@@ -79,8 +94,11 @@ Estas tecnologias foram selecionados pela modularidade e por serem "fracamente a
   - Ferramentas para modularidade e reuso de código
   - Forte integração com CI/CD
   - Comunidade ativa e manutenção constante
+
 - *Commit linting* **Husky & commitlint**: Mantém um padrão semântico nos commits, mesmo nos locais.
+
 - *Java Development Kit* **JDK**: Necessário para o desenvolvimento e utilização de aplicações Java.
+
 - *Java Native Image compilation* **GraalVM**: Compila código para binários nativos, reduzindo tempo de inicialização e consumo de memória.
 
 ## Arquitetura
@@ -118,8 +136,10 @@ Estas tecnologias foram selecionados pela modularidade e por serem "fracamente a
 *Em construção...*
 
 ### Monitoramento e Observabilidade
-
-*Em construção...*
+Utilizando `kube-prometheus-stack` pelo Helm, o chart inclui:
+- Grafana: Dashboard de visualização de métricas e monitoramente em tempo real.
+- Prometheus: Coleta de métricas em tempo real, armazenamento de dados para análise de desempenho.
+- Alertmanager: Automatiza notificações e alertas, permitindo resposta rápida a incidentes.
 
 ### Segurança
 
@@ -206,6 +226,9 @@ O Terraform deve começar a provisionar todos os recursos necessários, em segui
 
 Em poucos segundos uma mensagem de sucesso deve aparecer, junto às URLs de todas as aplicações relevantes, sinalizando que os deploys foram feitos com sucesso, acesse os links gerados para checar se esta tudo ok:
 - Registro de imagens: http://localhost:5000/v2/_catalog
+- Grafana: http://localhost/monitoring/grafana
+- Prometheus: http://localhost/monitoring/prometheus
+- Alertmanager: http://localhost/monitoring/alertmanager
 - Aplicação getting-started, ambiente des: http://localhost/des/getting-started/hello
 - Aplicação getting-started, ambiente prd: http://localhost/prd/getting-started/hello
 
