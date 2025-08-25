@@ -12,6 +12,10 @@ COPY pnpm-lock.yaml pnpm-workspace.yaml package.json nx.json /app
 COPY packages/getting-started ./packages/getting-started
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 
+WORKDIR /app/packages/getting-started
+RUN chmod +x ./gradlew
+RUN ./gradlew dependencies --no-daemon
+
 WORKDIR /app
 RUN --mount=type=cache,target=/root/.gradle pnpm exec nx run getting-started:build -- --no-daemon
 
