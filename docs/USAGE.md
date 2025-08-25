@@ -2,12 +2,12 @@
 
 <a id="readme-top"></a>
 
-## Provisionando um cluster de Kubernetes local
+## Provisionamento de Cluster Kubernetes Local para Desenvolvimento
 
-Um estudo de caso sobre a implementação de um cluster Kubernetes local para desenvolvimento local.
+Estudo de caso que explora a implementação de um cluster Kubernetes em ambiente local, com foco em automação, flexibilidade e práticas de desenvolvimento de aplicações em contêineres.
 
 <!-- TABLE OF CONTENTS -->
-<details>
+<details open>
   <summary>Índice</summary>
   <ol>
     <li><a href="#objetivo">Objetivo</a></li>
@@ -17,10 +17,10 @@ Um estudo de caso sobre a implementação de um cluster Kubernetes local para de
       <a href="#arquitetura">Arquitetura</a>
       <ul>
         <li><a href="#repositório">Repositório</a></li>
-        <li><a href="#registro-de-imagens">Registro de Imagens</a></li>
+        <li><a href="#registro-de-imagens">Registro de imagens</a></li>
         <li><a href="#cluster-kubernetes">Cluster Kubernetes</a></li>
         <li><a href="#ci/cd">CI/CD</a></li>
-        <li><a href="#monitoramento-e-observabilidade">Monitoramento e Observabilidade</a></li>
+        <li><a href="#monitoramento-e-observabilidade">Monitoramento e observabilidade</a></li>
         <li><a href="#segurança">Segurança</a></li>
       </ul>
     </li>
@@ -47,209 +47,258 @@ Um estudo de caso sobre a implementação de um cluster Kubernetes local para de
 </details>
 
 ## Objetivo
-Este documento descreve todo o processo de planejamento e implementação de um cluster Kubernetes local para testes e desenvolvimento, detalhando os requisitos de hardware e software, escolhas de tecnologias, deploy de recursos, procedimentos de operação e advertências refrente ao uso do repositório.
+Este documento apresenta o processo de planejamento e implementação de um cluster Kubernetes em ambiente local. São detalhados os requisitos de hardware e software, as tecnologias selecionadas, os procedimentos de provisionamento e operação, além de orientações importantes sobre o uso do repositório.
 
 ## Escopo
-O cluster será utilizado em ambiente local GNU/Linux, com foco em desenvolvimento ágil de aplicações. Devido a natureza das tecnologias escolhidas, o provisionamento da infraestrutura é leve e rápido.
+O cluster será executado em sistemas GNU/Linux, com foco em práticas de desenvolvimento ágil. Devido à natureza das ferramentas adotadas, a infraestrutura pode ser provisionada de forma leve e rápida, garantindo flexibilidade para simulações de ambientes em produção.
 
 ## Tecnologias
-Estas tecnologias foram selecionados pela modularidade e por serem "fracamente acopladas", ou seja, podem ser substituidas sem gerar muitos problemas.
+As tecnologias selecionadas para este projeto foram escolhidas por sua modularidade e baixo acoplamento, permitindo substituições com impacto mínimo na arquitetura geral.
 
-- *Sistema operacional* **Debian GNU/Linux**: É reconhecido por sua estabilidade e segurança, ideal para servidores e sistemas críticos.
+- Sistema Operacional
+  - **Debian GNU/Linux**
+  - Reconhecido por sua estabilidade e segurança, é ideal para servidores e ambientes críticos.
 
-- *Container runtime* **Docker**: A escolha princiapl para trabalhos que envolvem containers, uma das maioridas ferramentas do mercado.
+- Container Runtime
+  - **Docker**
+  - Principal ferramenta para criação e gerenciamento de contêineres, amplamente adotada no mercado.
 
-- *Kubernetes CLI*: **kubectl**: Essencial para interações diretas com o cluster kubernetes, local ou não.
+- Kubernetes CLI
+  - **kubectl**
+  - Ferramenta essencial para interações com clusters Kubernetes, locais ou remotos.
 
-- ⚠️ *Kubernetes distribution* **kind**: A escolha mais importante do projeto, kind (kubenernetes in docker):
-  - Utiliza containers para rodar os nodes ao invés de VMs dedicadas.
-  - Permite múltiplos clusters em paralelo sem depender de VMs.
-  - Muito usado em pipelines de CI/CD e testes locais.
+- ⚠️ Distribuição Kubernetes
+  - **kind (Kubernetes IN Docker)**
+  - Elemento central do projeto. Utiliza contêineres em vez de máquinas virtuais para executar os nodes, permitindo:
+    - Criação de múltiplos clusters em paralelo.
+    - Provisionamento leve e rápido.
+    - Integração com pipelines de CI/CD e testes locais.
 
-- *Kubernetes package manager* **Helm**: Facilita a instalação e manutenção de packages no cluster, como ingress, monitoramento e bancos de dados.
+- Gerenciador de Pacotes Kubernetes
+  - **Helm**
+  - Facilita a instalação, atualização e gerenciamento de pacotes no cluster, como ingress controllers, sistemas de monitoramento e bancos de dados.
 
-- *Monitoramento* **Grafana**: Disponibiliza um dashboard robusto para visualizar as metricas de desejadas do cluster.
+- Monitoramento
+  - **Grafana**
+  - Oferece dashboards interativos para visualização de métricas do cluster..
 
-- *Observabilidade* **Prometheus**: Coleta as métricas dos elementos do cluster, disponibilizando os logs para outras ferramentas.
+- Observabilidade
+  - **Prometheus**
+  - Responsável pela coleta de métricas dos componentes do cluster, integrando-se com outras ferramentas de visualização e alerta.
 
-- *Alertas* **Alertmanager**: Permite a criação de alertas e notificações customizadas para elementos do cluster.
+- Alertas
+  - **Alertmanager**
+  - Permite a configuração de alertas e notificações personalizadas com base nas métricas coletadas.
 
-- *Infrastructure as code* **Terraform**: De modo declarativo, provisiona toda a infraestrutura necessária, desde o registro de container local, o cluster kubernetes, volumes, etc.
+- Infraestrutura como Código
+  - **Terraform**
+  - Provisiona a infraestrutura de forma declarativa, incluindo o registro de contêineres local, volumes e o próprio cluster Kubernetes.
 
-- *Node Version Manager* **nvm**: Facilita a instalação e gerenciamentos de mútiplas versões do NodeJS.
+- Node Version Manager
+  - **nvm**
+  - Facilita a instalação e gerenciamento de múltiplas versões do Node.js.
 
-- *Javascript Runtime* **NodeJS**: Necessário para executar arquivos JavaScript.
+- Javascript Runtime
+  - **NodeJS**
+  - Necessário para execução de scripts e aplicações JavaScript.
 
-- *Node Package Manager*: **pnpm**: Utilizado para gerenciar pacotes node, utilizado n lugar do `npm` pois:
-  - Tem instalações mais rápidas que o `npm`;
-  - Cache global evita duplicação de pacotes;
-  - Dependências compartilhadas via links simbólicos, sem múltiplas cópias;
-  - Controle mais rígido de versões, reduzindo conflitos;
-  - Suporte a monorepos nativo com os `workspaces`, ideal para grandes projetos com múltiplos pacotes.
+- Node Package Manager
+  - **pnpm**
+  - Alternativa ao `npm`, escolhido por:
+    - Instalações mais rápidas;
+    - Cache global que evita duplicação de pacotes;
+    - Compartilhamento de dependências via links simbólicos;
+    - Controle rigoroso de versões;
+    - Suporte nativo a monorepos com workspaces.
 
-- *Build tool* **Nx**: Responsável por organizar o monorepo e executar comandos, ideal para monorepos pois dispoẽm de:
-  - Cache inteligente que acelera builds e testes
-  - Análises gráficas de dependências entre projetos
-  - Suporte integrado a várias tecnologias (React, Angular, Node, Java, etc.)
-  - Ferramentas para modularidade e reuso de código
-  - Forte integração com CI/CD
-  - Comunidade ativa e manutenção constante
+- Build tool
+  - **Nx**
+  - Organiza o monorepo e executa comandos. Ideal para grandes projetos, oferece:
+    - Cache inteligente para acelerar builds e testes;
+    - Visualização gráfica de dependências;
+    - Suporte a múltiplas tecnologias (Node, Java);
+    - Ferramentas para modularização e reutilização de código;
+    - Forte integração com CI/CD.
 
-- *Commit linting* **Husky & commitlint**: Mantém um padrão semântico nos commits, mesmo nos locais.
+- Padronização de Commits
+  - **Husky & commitlint**
+  - Garantem a conformidade com padrões semânticos nos commits, mesmo em ambientes locais.
 
-- *Java Development Kit* **JDK**: Necessário para o desenvolvimento e utilização de aplicações Java.
+- Java Development Kit
+  - **JDK**
+  - Essencial para desenvolvimento e execução de aplicações Java.
 
-- *Java Native Image compilation* **GraalVM**: Compila código para binários nativos, reduzindo tempo de inicialização e consumo de memória.
+- Compilação para Binários Nativos (JDK)
+  - **GraalVM**
+  - Compila código Java para binários nativos, reduzindo tempo de inicialização e consumo de memória.
 
 ## Arquitetura
 
 ### Repositório
 
-- Utiliza pnpm workspace como solução de monorepo, múltiplas aplicações em um único repositório;
-- Builds e scripts que geram artefatos são gerenciados pelo Nx;
-- Linting de commits via Husky e commitlint;
-- Instalação inicial de infraestrutura via shell script.
-- Deploy inicial de aplicações via shell script.
+- Estruturado como monorepo utilizando pnpm workspaces, permitindo múltiplas aplicações em um único repositório.
+- Nx gerencia builds e scripts que geram artefatos.
+- Padronização de commits via Husky e commitlint.
+- Provisionamento inicial da infraestrutura e aplicações realizado por scripts shell.
 
 ### Registro de imagens
 
-- Local, com volume criado para disponibilizar imagens no host caso necessário;
-- Utiliza imagem dedicada do Docker `registry:2`, pŕopria para registros locais;
-- Conecta-se a rede Docker `kind` para que o cluster kubernetes possa fazer o `pull` das imagens;
+- Registro local com volume persistente, permitindo acesso às imagens diretamente pelo host se necessário.
+- Utiliza a imagem oficial Docker `registry:2`, adequada para registros locais.
+- Conectado à rede Docker `kind`, permitindo que o cluster Kubernetes realize o pull das imagens.
 
 ### Cluster Kubernetes
 
-- Local, múltiplos nodes;
+- Cluster local com múltiplos nodes;
   - 1 control-plane;
   - 1 worker reserva para tarefas gerais;
   - 1 worker dedicado para aplicações;
-  - 1 worker dedicado para ingress.
+  - 1 worker dedicado para o controle de ingress.
 - 2 custom namespaces
-  - des: para desenvolvimento e teste das aplicações;
-  - prd: para aplicações em produção;
+  - des: destinado ao desenvolvimento e testes;
+  - prd: destinado à execução de aplicações em produção.
 - Instalação de pacotes via `Helm`;
-- `nginx-ingress` como ingress controller para roteamento HTTP local;
-- Conexão com registro de imagens via rede Docker `kind`.
+- Utilização do `nginx-ingress` como ingress controller para roteamento HTTP local.
+- Conectividade com o registro de imagens via rede Docker `kind`.
 
 ### CI/CD
 
-*Em construção...*
+- *Pipeline de integração e entrega contínua em desenvolvimento...*
 
 ### Monitoramento e Observabilidade
-Utilizando `kube-prometheus-stack` pelo Helm, o chart inclui:
-- Grafana: Dashboard de visualização de métricas e monitoramente em tempo real.
-- Prometheus: Coleta de métricas em tempo real, armazenamento de dados para análise de desempenho.
-- Alertmanager: Automatiza notificações e alertas, permitindo resposta rápida a incidentes.
+
+Implementado com o `kube-prometheus-stack` via Helm, incluindo:
+
+- Grafana: Dashboards interativos para visualização de métricas e monitoramento em tempo real.
+- Prometheus: Coleta e armazenamento de métricas para análise de desempenho.
+- Alertmanager: Geração automatizada de alertas e notificações, permitindo resposta rápida a incidentes.
 
 ### Segurança
 
-*Em construção...*
+- *Módulo de segurança em desenvolvimento...*
 
 ## Requisitos
 
 ### Hardware
-Mínimo e recomendado ([de acordo com sistema o operacional escolhido][debian-requirements-url])
-- CPU: 1 GHz
-- RAM: 1 ~ 2GB
-- Armazenamento: 10 ~ 20GB
+
+Requisitos mínimos e recomendados, considerando [o sistema operacional Debian GNU/Linux][debian-requirements-url]:
+
+- CPU: ≥ 1 GHz
+- Memória RAM: 1 a 2GB
+- Armazenamento: 10 a 20GB
 
 ### Software
-Os métodos de instalação estão disponíveis nas documentações de cada ferramenta, apenas detalhes pontuais serão inseridos aqui.
-- Sistema operacional: **Debian GNU/Linux 12**
+
+A instalação das ferramentas deve seguir as instruções oficiais de cada projeto. Abaixo estão os requisitos e observações específicas:
+
+- **Debian GNU/Linux 12**
   - [Instalação][debian-install-url]
-  - *Outras distribuições de linux podem instalar as ferramentas necessárias de formas alternativas, verifique a documentaçào de cada ferramenta.*
-- Container runtime: **Docker ≥ 28.3.3**
+  - *Outras distribuições Linux são compatíveis, mas podem exigir métodos de instalação alternativos. Consulte a documentação oficial de cada ferramenta.*
+- **Docker ≥ 28.3.3**
   - [Instalação][docker-install-url]
-  - O daemon  do Docker sempre roda no user `root`, para evitar o uso de `sudo`, [adicione o usuário no grupo Docker][docker-install-root-url].
-  - Algumas distribuições de linux utilizam `systemd` para gerenciar serviços e talvez o Docker não inicie automaticamente no boot. Você pode [configurar esse compartamento][docker-install-boot-url].
-  - Utilize o comando `docker run hello-world` para verificar se a instalação foi bem sucedida.
-- Kubernetes CLI: **kubectl ≥ 1.33.3**
+  - O daemon do Docker roda como `root`. Para evitar o uso constante de `sudo`, [adicione o usuário no grupo Docker][docker-install-root-url].
+  - Em distribuições que utilizam `systemd`, o Docker pode não iniciar automaticamente. [Configure esse compartamento][docker-install-boot-url] se necessário.
+  - Verificação: `docker run hello-world`
+- **kubectl ≥ 1.33.3**
   - [Instalação][kubectl-install-url]
-  - Utilize o comando `kubectl version` para verificar se a instalação foi bem sucedida.
-- Kubernetes distribution: **kind ≥ 0.29.0**
+  - Verificação: `kubectl version`
+- **kind ≥ 0.29.0**
   - [Instalação][kind-install-url]
-  - Importante lembrar de ter o executável no `PATH` do sistema, para poder invocar comandos com `kind`.
-  - Utilize o comando `kind version` para verificar se a instalação foi bem sucedida.
-- Kubernetes package manager: **Helm ≥ 3.18.5**
+  - Certifique-se de que o executável esteja no `PATH` do sistema.
+  - Verificação: `kind version`
+- **Helm ≥ 3.18.5**
   - [Instalação][helm-install-url]
-  - Importante lembrar de ter o executável no `PATH` do sistema, para poder invocar comandos com `helm`.
-  - Utilize o comando `helm version` para verificar se a instalação foi bem sucedida.
-- Infrastructure as code: **Terraform ≥ 1.13.0**
+  - Certifique-se de que o executável esteja no `PATH` do sistema.
+  - Verificação: `helm version`
+- **Terraform ≥ 1.13.0**
   - [Instalação][terraform-install-url]
-  - Utilize o comando `terraform version` para verificar se a instalação foi bem sucedida.
-- **(Opcional)** Node Version Manager: **nvm ≥ 0.40.3**
+  - Verificação: `terraform version`
+- **(Opcional) nvm ≥ 0.40.3**
   - [Instalação][nvm-install-url]
-  - Utilize o comando `nvm --version` para verificar se a instalação foi bem sucedida.
-- Javascript Runtime: **NodeJS ≥ 22.18.0**
-  - Caso tenha instalado o `nvm`, você pode usar o comando `nvm install 22.18.0`
-  - Ou faça a [Instalação][node-install-url] dos binários manualmente *(é fortemente recomendado utilizar o `nvm`)*
-  - Utilize o comando `node --version` para verificar se a instalação foi bem sucedida.
-- Node Package Manager: **pnpm ≥ 10.15.0**
-  - [Instalação][pnpm-install-url]
-  - Caso não deseje instalar os binários diretamente, você pode utilizar o `npm` *(instalado juntamente do node)* com `npm install -g pnpm@10.15.0`
-  - Utilize o comando `pnpm --version` para verificar se a instalação foi bem sucedida.
-- Java Development Kit: **JDK ≥ 21.0.8**
+  - Verificação: `nvm --version`
+- **NodeJS ≥ 22.18.0**
+  - Se estiver usando o nvm: `nvm install 22.18.0`
+  - Alternativamente, [instale os binários manualmente][node-install-url] *(recomendado usar nvm)*.
+  - Verificação: `node --version`
+- **pnpm ≥ 10.15.0**
+  - Instalação via npm: `npm install -g pnpm@10.15.0`
+  - Alternativamente, [instale os binários manualmente][pnpm-install-url].
+  - Verificação: `pnpm --version`
+- **JDK ≥ 21.0.8**
   - [Instalação][java-install-url]
-  - Utilize o comando `java --version` para verificar se a instalação foi bem sucedida.
-- Java Native Image compilation: **GraalVM ≥ 21.0.8-graal**
+  - Verificação: `java --version`
+- **GraalVM ≥ 21.0.8-graal**
   - [Instalação][graalvm-install-url]
-  - Utilize o comando `java --version` para verificar se a instalação foi bem sucedida *(o valor deve estar diferente do recebido na instalação inicial do `JDK`)*.
+  - Verificação: `java --version` *(o valor deve diferir da versão padrão do JDK)*
 
 ## Utilização
 
-Certifique-se que todos os requisitos estejam instalados e funcionais.
+Antes de iniciar, certifique-se de que todos os requisitos estejam devidamente instalados e funcionais.
 
 ### Primeiro deploy
-O primeiro deploy é feito através de um shell script, o que flexibiliza a implementação em um ambiente remoto, como uma VM, através de ferramentas como `Ansible`.
+O primeiro deploy é realizado por meio de um `script shell`, o que permite flexibilidade na implementação, inclusive em ambientes remotos (como VMs), utilizando ferramentas como `Ansible`.
 
-Cheque se o script `scripts/infra-terraform.sh` tem permissões de execução:
+- Verifique as permissões do script:
 ```bash
 ls -l scripts/infra-terraform.sh
 ```
-Caso não esteja como executável, de as permissões necessárias:
+- Se o script não estiver com permissões de execução, aplique:
 ```bash
 chmod +x scripts/infra-terraform.sh
 ```
-*Permissões esperadas: `-rwxr-xr-x`*
+- Permissões esperadas: `-rwxr-xr-x`
 
 <br/>
 
-Agora, execute o script! Temos duas maneiras de fazer isso, manualmente ou através de Makefile:
+Você pode executar o script de duas formas:
+- Diretamente: 
 ```bash
 ./scripts/infra-terraform.sh all
-
+```
+- Via Makefile: 
+```bash
 make all
 ```
-*Ao surgir dúvidas dos comandos diponíves, use o argumento `help`: `make help`*
+- Para visualizar os comandos disponíveis, utilize:
+```bash
+make help
+```
 
-O Terraform deve começar a provisionar todos os recursos necessários, em seguida, o kubectl ira fazer o deploy de todas as aplicações configuradas. Logs do progresso devem aparecer nessa syntax: `[HH:MM:SS][INFO] Message...`
+O Terraform iniciará o provisionamento dos recursos necessários. Em seguida, o `kubectl` realizará o deploy das aplicações configuradas. Os logs de progresso seguirão o padrão:
+```bash
+[HH:MM:SS][INFO] Message...
+```
 
-Em poucos segundos uma mensagem de sucesso deve aparecer, junto às URLs de todas as aplicações relevantes, sinalizando que os deploys foram feitos com sucesso, acesse os links gerados para checar se esta tudo ok:
+Após alguns segundos, uma mensagem de sucesso será exibida, juntamente com as URLs das aplicações relevantes. Acesse os links para verificar se os serviços estão operacionais:
 - Registro de imagens: http://localhost:5000/v2/_catalog
 - Grafana: http://localhost/monitoring/grafana
 - Prometheus: http://localhost/monitoring/prometheus
 - Alertmanager: http://localhost/monitoring/alertmanager
-- Aplicação getting-started, ambiente des: http://localhost/des/getting-started/hello
-- Aplicação getting-started, ambiente prd: http://localhost/prd/getting-started/hello
+- Aplicação getting-started (des): http://localhost/des/getting-started/hello
+- Aplicação getting-started (prd): http://localhost/prd/getting-started/hello
 
-### Deploys automaticos
+### Deploys automáticos
 
-*Em construção...*
+*Em desenvolvimento...*
 
 ### Destruindo infraestrutura
 
-Caso necessário, é possível destruir completamente a infraesturura (consistente apenas em containers e volumes), deixando o ambiente limpo para um novo deploy:
+Caso seja necessário, é possível remover completamente a infraestrutura provisionada — composta exclusivamente por contêineres e volumes — deixando o ambiente limpo para um novo deploy.:
 
+- Comando direto:
 ```bash
 ./scripts/infra-terraform.sh destroy
+```
 
+- Via Makefile:
+```bash
 make destroy
 ```
 
-O Terraform deve começar a deletar os recursos, e em poucos segundos uma mensagem de sucesso deve aparecer.
+O Terraform iniciará o processo de destruição dos recursos. Em poucos segundos, uma mensagem de sucesso será exibida.
 
 ## Advertências
-- Commits assinados por SSH ou GPG são requeridos por padrão. Caso esse comportamento não seja desejável, comente a verificação em `.husky/commit-msg`:
+- Por padrão, o projeto exige commits assinados via SSH ou GPG. Caso esse comportamento não seja desejado, é possível desabilitar a verificação comentando o trecho correspondente no arquivo
 ```sh
 #!/usr/bin/env sh
 
@@ -265,7 +314,9 @@ npx --no -- commitlint --edit "$1"
 
 ## Licença
 
-Distribuído sob a Licença Pública Geral GNU v3.0. Consulte a [LICENÇA][license-url] para mais informações.
+Distribuído sob a Licença Pública Geral GNU v3.0.
+
+Consulte a [LICENÇA][license-url] para mais informações.
 
 ## Referências
 - [Documentação Docker][docker-docs-url]
