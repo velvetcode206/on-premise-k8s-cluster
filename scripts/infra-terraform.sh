@@ -31,13 +31,15 @@ log() {
 }
 
 create_infrastructure() {
-    log "Applying terraform resources..."
-    terraform -chdir=$TERRAFORM_DIR apply --auto-approve
+  log "Applying terraform resources..."
+  terraform -chdir=$TERRAFORM_DIR apply --auto-approve
+  log "Deploying monitoring tools..."
+  kubectl apply -f "${K8S_DIR}/${MONITORING_NAMESPACE}/"
 }
 
 destroy_infrastructure() {
-    log "Destroying terraform resources..."
-    terraform -chdir=$TERRAFORM_DIR destroy --auto-approve
+  log "Destroying terraform resources..."
+  terraform -chdir=$TERRAFORM_DIR destroy --auto-approve
 }
 
 deploy_environments() {

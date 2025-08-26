@@ -1,4 +1,4 @@
-data "docker_network" "kind" {
+resource "docker_network" "kind" {
   name = var.kind_cluster_network_name
 }
 
@@ -25,6 +25,6 @@ resource "docker_container" "local_registry" {
   }
 
   networks_advanced {
-    name = data.docker_network.kind.name
+    name = docker_network.kind.name
   }
 }

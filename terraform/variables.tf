@@ -101,7 +101,7 @@ variable "helm_ingress_nginx_values_file" {
 variable "helm_kube_prometheus_stack_name_suffix" {
   type        = string
   description = "The suffix of the kube-prometheus-stack helm release name."
-  default     = "prometheus"
+  default     = "kube-prometheus-stack"
 }
 
 variable "helm_kube_prometheus_stack_repo" {

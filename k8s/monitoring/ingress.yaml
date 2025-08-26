@@ -1,0 +1,44 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-monitoring
+  namespace: monitoring
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /monitoring/grafana(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: kube-prometheus-stack-grafana
+            port:
+              number: 80
+      - path: /monitoring/alertmanager(/|$)(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: kube-prometheus-stack-alertmanager
+            port:
+              number: 9093
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: prometheus-ingress
+  namespace: monitoring
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /monitoring/prometheus
+        pathType: Prefix
+        backend:
+          service:
+            name: kube-prometheus-stack-prometheus
+            port:
+              number: 9090
+---
