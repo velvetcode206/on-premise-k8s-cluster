@@ -2,6 +2,7 @@ plugins {
     id("dev.nx.gradle.project-graph") version("0.1.0")
     java
     id("io.quarkus")
+    id("org.sonarqube") version "4.3.0.3225"
 }
 
 repositories {
@@ -38,6 +39,16 @@ tasks.withType<Test> {
 tasks.withType<JavaCompile> {
     options.encoding = "UTF-8"
     options.compilerArgs.add("-parameters")
+}
+
+sonarqube {
+    properties {
+        property("sonar.projectKey", "getting-started")
+        property("sonar.projectName", "Getting Started Quarkus App")
+        property("sonar.projectVersion", version)
+        property("sonar.host.url", System.getenv("SONAR_URL") ?: "http://localhost:5002")
+        property("sonar.login", System.getenv("SONAR_AUTH_TOKEN"))
+    }
 }
 
 allprojects {

@@ -7,6 +7,9 @@ set -euo pipefail
 SCRIPTS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 TERRAFORM_DIR="${SCRIPTS_DIR}/../terraform"
+K8S_DIR="${SCRIPTS_DIR}/../k8s"
+
+source "$SCRIPTS_DIR/../.env"
 
 # log function: prints messages with timestamp, log level, and color formatting
 function log() {

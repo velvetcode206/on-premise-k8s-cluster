@@ -125,11 +125,13 @@ resource "minikube_cluster" "primary" {
   driver       = "docker"
   cluster_name = "${var.project_prefix}-${var.minikube_suffix}"
   addons = [
+    "default-storageclass",
+    "storage-provisioner",
     "ingress",
     "dashboard"
   ]
   insecure_registry = [
-    "localhost:5000"
+    "host.docker.internal:5000"
   ]
 }
 
@@ -143,32 +145,48 @@ resource "null_resource" "wait_for_ingress_nginx" {
       set -e
       NAMESPACE=ingress-nginx
       CONTROLLER_SELECTOR="app.kubernetes.io/component=controller"
+      WEBHOOK_SERVICE="ingress-nginx-controller-admission"
       WEBHOOK_NAME="ingress-nginx-admission"
 
       echo "Waiting for NGINX ingress controller pod to be ready..."
       kubectl wait --namespace $NAMESPACE \
         --for=condition=ready pod \
         --selector=$CONTROLLER_SELECTOR \
-        --timeout=180s
+        --timeout=300s
 
-      echo "Polling for admission webhook readiness..."
+      echo "Waiting for admission webhook service endpoints..."
+      kubectl wait --namespace $NAMESPACE \
+        --for=condition=ready pod \
+        --selector=app.kubernetes.io/component=admission-webhook \
+        --timeout=300s || true
+
+      echo "Polling for admission webhook service DNS..."
       for i in $(seq 1 60); do
-        STATUS=$(kubectl get validatingwebhookconfiguration $WEBHOOK_NAME -o jsonpath='{.webhooks[0].clientConfig.service.name}' || echo "notready")
-        if [ "$STATUS" != "notready" ]; then
-          echo "Admission webhook is ready!"
+        kubectl get svc $WEBHOOK_SERVICE -n $NAMESPACE >/dev/null 2>&1 || {
+          echo "Webhook service not created yet, retrying..."
+          sleep 2
+          continue
+        }
+
+        # Try to connect to the service inside the cluster
+        if kubectl run tmpcheck --rm -i --restart=Never --image=curlimages/curl -- \
+          -sk https://$WEBHOOK_SERVICE.$NAMESPACE.svc:443 >/dev/null 2>&1; then
+          echo "Admission webhook service is responding!"
           exit 0
         fi
-        echo "Webhook not ready yet, retrying in 2s..."
+
+        echo "Webhook service not ready yet, retrying in 2s..."
         sleep 2
       done
 
-      echo "Timeout waiting for admission webhook."
+      echo "Timeout waiting for admission webhook to respond."
       exit 1
     EOF
   }
 
   depends_on = [minikube_cluster.primary]
 }
+
 
 data "external" "minikube_ip" {
   program = ["bash", "-c", <<EOT
@@ -234,6 +252,8 @@ resource "kubernetes_namespace" "des" {
       environment = "dev"
     }
   }
+
+  depends_on = [ minikube_cluster.primary ]
 }
 
 resource "kubernetes_namespace" "prd" {
@@ -243,6 +263,8 @@ resource "kubernetes_namespace" "prd" {
       environment = "prd"
     }
   }
+
+  depends_on = [ minikube_cluster.primary ]
 }
 
 resource "kubernetes_ingress_v1" "dashboard" {

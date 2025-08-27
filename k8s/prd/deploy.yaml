@@ -16,11 +16,9 @@ spec:
       labels:
         app: getting-started
     spec:
-      nodeSelector:
-        role: app
       containers:
         - name: getting-started
-          image: localhost:5000/getting-started-prd:latest
+          image: host.docker.internal:5000/getting-started-prd:latest
           ports:
             - containerPort: 8080
           resources:
