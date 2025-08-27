@@ -72,6 +72,24 @@ resource "null_resource" "wait_for_ingress_nginx" {
   depends_on = [minikube_cluster.primary]
 }
 
+resource "null_resource" "wait_for_kube_prometheus_stack" {
+  triggers = { 
+    key = uuid()
+  }
+
+  provisioner "local-exec" {
+    command = <<EOF
+      printf "\nWaiting for the monitoring...\n"
+      kubectl wait --namespace ${var.helm_kube_prometheus_stack_namespace} \
+        --for=condition=ready pod \
+        --selector=app.kubernetes.io/name=grafana \
+        --timeout=180s
+    EOF
+  }
+
+  depends_on = [minikube_cluster.primary]
+}
+
 data "external" "minikube_ip" {
   program = ["bash", "-c", <<EOT
 IP=$(minikube -p ${minikube_cluster.primary.cluster_name} ip)
@@ -87,6 +105,28 @@ locals {
   minikube_ip = data.external.minikube_ip.result["ip"]
 }
 
+# Helm
+
+resource "helm_release" "kube_prometheus_stack" {
+  name             = var.helm_kube_prometheus_stack_name
+  repository       = var.helm_kube_prometheus_stack_repo
+  chart            = "kube-prometheus-stack"
+  version          = var.helm_kube_prometheus_stack_version
+  namespace        = var.helm_kube_prometheus_stack_namespace
+  create_namespace = true
+
+  values = [<<EOF
+grafana:
+  adminUser: admin
+  adminPassword: "1234"
+EOF
+  ]
+
+  depends_on = [null_resource.wait_for_ingress_nginx]
+}
+
+# Kubernetes
+
 resource "kubernetes_ingress_v1" "dashboard" {
   metadata {
     name      = var.k8s_ingress_kubernetes_dashboard
@@ -98,7 +138,7 @@ resource "kubernetes_ingress_v1" "dashboard" {
       host = "dashboard.${local.minikube_ip}.nip.io"
       http {
         path {
-          path = "/"
+          path      = "/"
           path_type = "Prefix"
           backend {
             service {
@@ -113,7 +153,72 @@ resource "kubernetes_ingress_v1" "dashboard" {
     }
   }
 
-  depends_on = [ 
+  depends_on = [
     null_resource.wait_for_ingress_nginx
-   ]
+  ]
+}
+
+resource "kubernetes_ingress_v1" "monitoring" {
+  metadata {
+    name      = var.k8s_ingress_monitoring
+    namespace = var.k8s_namespace_monitoring
+  }
+
+  spec {
+    rule {
+      host = "prometheus.${local.minikube_ip}.nip.io"
+      http {
+        path {
+          path      = "/"
+          path_type = "Prefix"
+          backend {
+            service {
+              name = "${var.helm_kube_prometheus_stack_name}-prometheus"
+              port {
+                number = 9090
+              }
+            }
+          }
+        }
+      }
+    }
+    rule {
+      host = "grafana.${local.minikube_ip}.nip.io"
+      http {
+        path {
+          path      = "/"
+          path_type = "Prefix"
+          backend {
+            service {
+              name = "${var.helm_kube_prometheus_stack_name}-grafana"
+              port {
+                number = 80
+              }
+            }
+          }
+        }
+      }
+    }
+    rule {
+      host = "altertmanager.${local.minikube_ip}.nip.io"
+      http {
+        path {
+          path      = "/"
+          path_type = "Prefix"
+          backend {
+            service {
+              name = "${var.helm_kube_prometheus_stack_name}-alertmanager"
+              port {
+                number = 9093
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  depends_on = [
+    null_resource.wait_for_ingress_nginx
+  ]
 }

@@ -6,6 +6,16 @@ variable "project_prefix" {
   default     = "on-prem-k8s"
 }
 
+variable "grafana_user" {
+  description = "Grafana user."
+  type        = string
+}
+
+variable "grafana_password" {
+  description = "Grafana password."
+  type        = string
+}
+
 # Local Container Registry
 
 variable "registry_image" {
@@ -60,28 +70,28 @@ variable "dashboard_node_port" {
 
 # Helm
 
-variable "helm_ingress_nginx_name" {
+variable "helm_kube_prometheus_stack_name" {
   type        = string
-  description = "The ingress_nginx helm release name."
-  default     = "ingress-nginx"
+  description = "The kube-prometheus-stack helm release name."
+  default     = "kube-prometheus-stack"
 }
 
-variable "helm_kubernetes_dashboard_name" {
+variable "helm_kube_prometheus_stack_repo" {
   type        = string
-  description = "The kubernetes-dashboard helm release name."
-  default     = "kubernetes-dashboard"
+  description = "Url to fecth the kube-prometheus-stack repository."
+  default     = "https://prometheus-community.github.io/helm-charts"
 }
 
-variable "helm_ingress_nginx_version" {
+variable "helm_kube_prometheus_stack_version" {
   type        = string
-  description = "The version for the ingress-nginx chart."
-  default     = "4.13.1"
+  description = "The version for the kube-prometheus-stack chart."
+  default     = "77.0.0"
 }
 
-variable "helm_kubernetes_dashboard_version" {
+variable "helm_kube_prometheus_stack_namespace" {
   type        = string
-  description = "The version for the kubernetes-dashboard chart."
-  default     = "7.13.0"
+  description = "The kube-prometheus-stack namespace (it will be created if needed)."
+  default     = "monitoring"
 }
 
 # k8s
@@ -98,8 +108,20 @@ variable "k8s_namespace_kube_dashboard" {
   default     = "kubernetes-dashboard"
 }
 
+variable "k8s_namespace_monitoring" {
+  type        = string
+  description = "The monitoring namespace."
+  default     = "monitoring"
+}
+
 variable "k8s_ingress_kubernetes_dashboard" {
-  description = "The array of custom namespaces that will be created."
+  description = "The Kubernetes Dashboad ingress name."
   type        = string
   default     = "kubernetes-dashboard"
+}
+
+variable "k8s_ingress_monitoring" {
+  description = "The monitoring ingress name."
+  type        = string
+  default     = "monitoring"
 }
