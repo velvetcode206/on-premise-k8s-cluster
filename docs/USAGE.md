@@ -1,4 +1,7 @@
 <!-- BACK TO TOP ANCHOR -->
+Nome: **José Israel de Assis Filho**  
+Matrícula: **C160436-1**  
+Link repositório: **https://github.com/velvetcode206/on-premise-k8s-cluster**
 
 <a id="readme-top"></a>
 
@@ -20,6 +23,7 @@ Estudo de caso sobre a criação automatizada de um cluster Kubernetes em ambien
         <li><a href="#cluster-kubernetes">Cluster Kubernetes</a></li>
         <li><a href="#pipeline-de-integração-contínua-(ci)">Pipeline de Integração Contínua (CI)</a></li>
         <li><a href="#cluster-kubernetes">Cluster Kubernetes</a></li>
+        <li><a href="#gestão-de-segredos">Gestão de Segredos</a></li>
       </ul>
     </li>
     <li>
@@ -33,6 +37,7 @@ Estudo de caso sobre a criação automatizada de um cluster Kubernetes em ambien
           <li><a href="#🧪-qualidade-de-código-e-ci">🧪 Qualidade de Código e CI</a></li>
           <li><a href="#🧰-ambiente-de-desenvolvimento">🧰 Ambiente de Desenvolvimento</a></li>
           <li><a href="#☕-tecnologias-java">☕ Tecnologias Java</a></li>
+          <li><a href="#🔒-gerenciamento-de-segredos">🔒 Gerenciamento de Segredos</a></li>
         </ul>
     </li>
     <li>
@@ -67,7 +72,7 @@ O cluster será executado em sistemas GNU/Linux, com foco em práticas de desenv
 
 ![Diagrama](diagram.png "Diagrama")
 
-A arquitetura do projeto é composta por quatro pilares principais: o repositório de código, o registro de imagens, a pipeline de integração contínua (CI) e o cluster Kubernetes com entrega contínua automatizada. Abaixo, detalhamos cada um deles:
+A arquitetura do projeto é composta por cinco pilares principais: o repositório de código, o registro de imagens, a pipeline de integração contínua (CI), o cluster Kubernetes com entrega contínua automatizada e gestão de segredos. Abaixo, detalhamos cada um deles:
 
 ### Repositório de Código
 
@@ -96,6 +101,11 @@ A arquitetura do projeto é composta por quatro pilares principais: o repositór
   - Alertmanager: permite configurar alertas com base nos dados do Prometheus.
 - Cada ferramenta possui um subdomínio próprio, como `http://grafana.<ip>.np.io`, enquanto as aplicações são acessadas por subcaminhos, como `http://<ip>/des/app/hello`.
 - Como solução de entrega contínua, o serviço ArgoCD é integrado ao cluster. Ele monitora o repositório de código e, ao detectar alterações nas branches definidas, realiza o deploy automático das aplicações. O ArgoCD busca as imagens no registro local e atualiza os pods no cluster, garantindo que cada build bem-sucedida seja refletida diretamente no ambiente de execução.
+
+### Gestão de Segredos
+
+- Para garantir segurança no acesso a recursos sensíveis, o projeto utiliza o HashiCorp Vault como solução de gerenciamento de segredos.
+- Ele é integrado ao Jenkins, ArgoCD e ao cluster Kubernetes, permitindo que credenciais sejam injetadas dinamicamente nos ambientes de execução, sem exposição em código ou arquivos de configuração.
 
 ## Tecnologias Utilizadas e Justificativas
 As tecnologias escolhidas para este projeto foram selecionadas com base em critérios como modularidade, baixo acoplamento, ampla adoção no mercado e facilidade de integração. A seguir, apresentamos os principais componentes organizados por categoria, com os pontos positivos que motivaram sua adoção:
@@ -185,6 +195,14 @@ Ambiente completo para desenvolvimento e automação de builds Java.
 Compilação de código Java para binários nativos. Vantagens:
 1. Redução no tempo de inicialização.
 2. Menor consumo de memória.
+
+### 🔒 Gerenciamento de Segredos
+
+**HashiCorp Vault**  
+Ferramenta especializada em armazenar, proteger e distribuir credenciais de forma segura. Por que foi escolhido:
+1. Centralização de segredos: Evita que senhas e tokens fiquem espalhados em arquivos ou scripts.
+2. Integração com CI/CD: Jenkins e ArgoCD acessam segredos diretamente do Vault.
+3. Segurança avançada: Suporte a políticas de acesso, logs de auditoria e rotação automática de credenciais.
 
 ## Requisitos
 
