@@ -1,106 +1,111 @@
-# Project
+# Project Settings
 
 variable "project_prefix" {
-  description = "Prefix to be used in the created resources."
   type        = string
-  default     = "on-premises-k8s"
+  default     = "on-prem-k8s"
 }
 
-# Container Registry
+variable "grafana_user" {
+  type        = string
+}
 
-variable "local_registry_volume_name_suffix" {
-  description = "The suffix of the local registry volume name."
+variable "grafana_password" {
+  type        = string
+}
+
+variable "registry_user" {
+  type        = string
+}
+
+variable "registry_password" {
+  type        = string
+}
+
+# Registry
+
+variable "registry_image" {
+  type        = string
+  default     = "registry:3.0.0"
+}
+
+variable "registry_volume_suffix" {
   type        = string
   default     = "registry-data"
 }
 
-variable "local_registry_volume_path_data" {
-  description = "The path inside the container where images are saved."
-  type        = string
-  default     = "/var/lib/registry"
-}
-
-variable "local_registry_name_suffix" {
-  description = "The suffix of the local registry name."
+variable "registry_container_suffix" {
   type        = string
   default     = "registry"
 }
 
-variable "local_registry_image" {
-  description = "Image to be used in the local container registry."
-  type        = string
-  default     = "registry:2"
-}
-
-variable "local_registry_internal_port" {
-  description = "Port available in the local container registry."
+variable "registry_internal_port" {
   type        = number
   default     = 5000
 }
 
-variable "local_registry_external_port" {
-  description = "Port exposed in the host to access the local container registry."
+variable "registry_external_port" {
   type        = number
   default     = 5000
 }
 
-# Kind Cluster
-
-variable "kind_cluster_name_suffix" {
-  description = "The suffix of the kind cluster name."
+variable "registry_volume_container_path" {
   type        = string
-  default     = "cluster"
+  default     = "/var/lib/registry"
 }
 
-variable "kind_cluster_config_path" {
-  type        = string
-  description = "The location where this cluster's kubeconfig will be saved to."
-  default     = "~/.kube/config"
+# Jenkins
+
+variable "jenkins_internal_port" {
+  type        = number
+  default     = 8080
 }
 
-variable "kind_cluster_network_name" {
-  type        = string
-  description = "The network name that should be create by kind."
-  default     = "kind"
+variable "jenkins_external_port" {
+  type        = number
+  default     = 5001
 }
 
-# Helm nginx
-
-variable "helm_ingress_nginx_name_suffix" {
-  type        = string
-  description = "The suffix of the helm's ingress-nginx release name."
-  default     = "ingress-nginx"
+variable "jenkins_agent_internal_port" {
+  type        = number
+  default     = 50000
 }
 
-variable "helm_ingress_nginx_repo" {
-  type        = string
-  description = "Url to fecth the ingress-nginx repository."
-  default     = "https://kubernetes.github.io/ingress-nginx"
+variable "jenkins_agent_external_port" {
+  type        = number
+  default     = 50000
 }
 
-variable "helm_ingress_nginx_version" {
-  type        = string
-  description = "The version for the ingress-nginx controller."
-  default     = "4.7.1"
+# Sonarqube
+
+variable "sonarqube_internal_port" {
+  type        = number
+  default     = 9000
 }
 
-variable "helm_ingress_nginx_namespace" {
-  type        = string
-  description = "The ingress-nginx namespace (it will be created if needed)."
-  default     = "ingress-nginx"
+variable "sonarqube_external_port" {
+  type        = number
+  default     = 5002
 }
 
-variable "helm_ingress_nginx_values_file" {
+# Minikube
+
+variable "minikube_suffix" {
+  description = "Suffix for the primary minikube cluster."
   type        = string
-  description = "A file with values to patch the ingress nginx usage with Kind."
-  default     = "helm-ingress-nginx-values.yaml"
+  default     = "primary"
 }
 
-# Helm Prometheus
+variable "dashboard_node_port" {
+  description = "NodePort to expose the Kubernetes Dashboard"
+  type        = number
+  default     = 30000
+}
 
-variable "helm_kube_prometheus_stack_name_suffix" {
+# Helm
+
+variable "helm_kube_prometheus_stack_name" {
   type        = string
-  description = "The suffix of the kube-prometheus-stack helm release name."
+  description = "The kube-prometheus-stack helm release name."
   default     = "kube-prometheus-stack"
 }
 
@@ -122,21 +127,34 @@ variable "helm_kube_prometheus_stack_namespace" {
   default     = "monitoring"
 }
 
-variable "helm_kube_prometheus_stack_values_file" {
+# k8s
+
+variable "k8s_namespace_ingress_nginx" {
   type        = string
-  description = "A file with values to patch the ingress nginx usage with Kind."
-  default     = "helm-prometheus-stack-values.yaml"
+  description = "The ingress-nginx namespace."
+  default     = "ingress-nginx"
 }
 
-# Kubernetes
-
-variable "k8s_namespaces" {
-  default = ["des", "prd"]
-  description = "The array of custom namespaces that will be created."
+variable "k8s_namespace_kube_dashboard" {
+  type        = string
+  description = "The kube-dashboard namespace."
+  default     = "kubernetes-dashboard"
 }
 
-variable "k8s_ingress_name_monitoring" {
+variable "k8s_namespace_monitoring" {
   type        = string
-  description = "Name of the ingress that defines Grafana and Alertmanager."
-  default     = "ingress-monitoring"
+  description = "The monitoring namespace."
+  default     = "monitoring"
+}
+
+variable "k8s_ingress_kubernetes_dashboard" {
+  description = "The Kubernetes Dashboad ingress name."
+  type        = string
+  default     = "kubernetes-dashboard"
+}
+
+variable "k8s_ingress_monitoring" {
+  description = "The monitoring ingress name."
+  type        = string
+  default     = "monitoring"
 }

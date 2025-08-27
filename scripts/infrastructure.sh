@@ -6,7 +6,7 @@ set -euo pipefail
 # Get absolute path of the script's directory
 SCRIPTS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-TERRAFORM_DIR="${SCRIPTS_DIR}/../terraform-new"
+TERRAFORM_DIR="${SCRIPTS_DIR}/../terraform"
 
 # log function: prints messages with timestamp, log level, and color formatting
 function log() {
@@ -52,6 +52,24 @@ function destroy_infrastructure() {
 
 function deploy_environments() {
   log "Deploying environments..."
+  docker buildx create --name "${INFRASTRUCTURE_PREFIX}-builder" --use --driver docker-container --driver-opt network=host 2>/dev/null || log "Using existing buildx instance..."
+  for env in "${ENVS[@]}"; do
+    for package_dir in "${SCRIPTS_DIR}/../packages"/*; do
+      [[ -d "$package_dir" ]] || continue
+      dockerfile_path="${package_dir}/Dockerfile"
+      if [[ -f "$dockerfile_path" ]]; then
+        package_name=$(basename "$package_dir")
+        log " -> Building and pushing for $env"
+        docker buildx build \
+          -f "$dockerfile_path" \
+          -t "localhost:5000/${package_name}-${env}:latest" \
+          --push \
+          "${SCRIPTS_DIR}/.."
+      fi
+    done
+    kubectl apply -f "${K8S_DIR}/${env}/"
+  done
+  docker buildx rm "${INFRASTRUCTURE_PREFIX}-builder"
   log SUCCESS "Environments deployed!"
 }
 

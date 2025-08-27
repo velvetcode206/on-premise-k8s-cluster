@@ -1,5 +1,12 @@
 # Docker
 
+resource "docker_network" "ci_network" {
+  name   = "${var.project_prefix}-ci-network"
+  driver = "bridge"
+}
+
+# Registry
+
 resource "docker_image" "registry" {
   name = var.registry_image
 }
@@ -22,6 +29,94 @@ resource "docker_container" "registry" {
     volume_name    = docker_volume.registry_data.name
     container_path = var.registry_volume_container_path
   }
+
+  depends_on = [ 
+    docker_image.registry,
+    docker_volume.registry_data
+  ]
+}
+
+# Jenkins
+
+resource "docker_image" "jenkins" {
+  name         = "${var.project_prefix}-jenkins:latest"
+
+  build {
+    context    = "${path.module}/../jenkins"
+    dockerfile = "${path.module}/../jenkins/Dockerfile"
+  }
+}
+
+resource "docker_volume" "jenkins_home" {
+  name = "${var.project_prefix}-jenkins-home"
+}
+
+resource "docker_container" "jenkins" {
+  name  = "${var.project_prefix}-jenkins"
+  image = docker_image.jenkins.image_id
+  restart = "always"
+
+  ports {
+    internal = var.jenkins_internal_port
+    external = var.jenkins_external_port
+  }
+
+  ports {
+    internal = var.jenkins_agent_internal_port
+    external = var.jenkins_agent_external_port
+  }
+
+  volumes {
+    volume_name    = docker_volume.jenkins_home.name
+    container_path = "/var/jenkins_home"
+  }
+
+  volumes {
+    host_path      = "/var/run/docker.sock"
+    container_path = "/var/run/docker.sock"
+  }
+
+  env = [
+    "JENKINS_OPTS=--httpPort=8080"
+  ]
+
+  networks_advanced {
+    name = docker_network.ci_network.name
+  }
+
+  depends_on = [ 
+    docker_network.ci_network,
+    docker_image.jenkins,
+    docker_volume.jenkins_home
+  ]
+}
+
+resource "docker_image" "sonarqube" {
+  name = "sonarqube:lts"
+}
+
+resource "docker_container" "sonarqube" {
+  name  = "${var.project_prefix}-sonarqube"
+  image = docker_image.sonarqube.image_id
+  restart = "always"
+
+  ports {
+    internal = var.sonarqube_internal_port
+    external = var.sonarqube_external_port
+  }
+
+  env = [
+    "SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true"
+  ]
+
+  networks_advanced {
+    name = docker_network.ci_network.name
+  }
+
+  depends_on = [
+    docker_network.ci_network,
+    docker_image.sonarqube
+  ]
 }
 
 # Minikube
@@ -32,6 +127,9 @@ resource "minikube_cluster" "primary" {
   addons = [
     "ingress",
     "dashboard"
+  ]
+  insecure_registry = [
+    "localhost:5000"
   ]
 }
 
@@ -72,24 +170,6 @@ resource "null_resource" "wait_for_ingress_nginx" {
   depends_on = [minikube_cluster.primary]
 }
 
-resource "null_resource" "wait_for_kube_prometheus_stack" {
-  triggers = { 
-    key = uuid()
-  }
-
-  provisioner "local-exec" {
-    command = <<EOF
-      printf "\nWaiting for the monitoring...\n"
-      kubectl wait --namespace ${var.helm_kube_prometheus_stack_namespace} \
-        --for=condition=ready pod \
-        --selector=app.kubernetes.io/name=grafana \
-        --timeout=180s
-    EOF
-  }
-
-  depends_on = [minikube_cluster.primary]
-}
-
 data "external" "minikube_ip" {
   program = ["bash", "-c", <<EOT
 IP=$(minikube -p ${minikube_cluster.primary.cluster_name} ip)
@@ -122,10 +202,48 @@ grafana:
 EOF
   ]
 
-  depends_on = [null_resource.wait_for_ingress_nginx]
+  depends_on = [
+    null_resource.wait_for_ingress_nginx
+  ]
+}
+
+resource "null_resource" "wait_for_kube_prometheus_stack" {
+  triggers = { 
+    key = uuid()
+  }
+
+  provisioner "local-exec" {
+    command = <<EOF
+      printf "\nWaiting for the monitoring...\n"
+      kubectl wait --namespace ${var.helm_kube_prometheus_stack_namespace} \
+        --for=condition=ready pod \
+        --selector=app.kubernetes.io/name=grafana \
+        --timeout=180s
+    EOF
+  }
+
+  depends_on = [helm_release.kube_prometheus_stack]
 }
 
 # Kubernetes
+
+resource "kubernetes_namespace" "des" {
+  metadata {
+    name = "des"
+    labels = {
+      environment = "dev"
+    }
+  }
+}
+
+resource "kubernetes_namespace" "prd" {
+  metadata {
+    name = "prd"
+    labels = {
+      environment = "prd"
+    }
+  }
+}
 
 resource "kubernetes_ingress_v1" "dashboard" {
   metadata {
@@ -219,6 +337,7 @@ resource "kubernetes_ingress_v1" "monitoring" {
   }
 
   depends_on = [
+    null_resource.wait_for_kube_prometheus_stack,
     null_resource.wait_for_ingress_nginx
   ]
 }
